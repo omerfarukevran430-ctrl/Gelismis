@@ -3,381 +3,305 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ömer Studio 3</title>
+    <title>Ömer Studio 3 | Pro Launcher</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-color: #001f3f; /* Lacivert (Normal Tema) */
-            --text-color: #FFD700; /* Sarı (Normal Tema) */
-            --accent-color: #ffcc00;
-            --panel-bg: rgba(255, 255, 255, 0.1);
-            --distance: 10px;
+            --bg-base: #121212;
+            --bg-side: #181818;
+            --bg-card: #202020;
+            --bg-hover: #2a2a2a;
+            --accent: #0078f2;
+            --text-primary: #f5f5f5;
+            --text-secondary: #a0a0a0;
+            --radius: 8px;
         }
 
-        /* Temalar */
-        body.theme-demo { --bg-color: #111; --text-color: #fff; --panel-bg: #222; border: 2px dashed #555; }
-        body.theme-klasik { --bg-color: #f4f4f9; --text-color: #333; --panel-bg: #e0e0e0; }
-        body.theme-neon { --bg-color: #000; --text-color: #0f0; --panel-bg: #111; text-shadow: 0 0 5px #0f0; }
-        body.theme-cyberpunk { --bg-color: #fcee0a; --text-color: #000; --panel-bg: #00ffff; font-family: monospace; }
-        body.theme-troll { --bg-color: #ff69b4; --text-color: #00ff00; --panel-bg: #ffff00; font-family: 'Comic Sans MS', cursive; }
-        body.theme-sakin { --bg-color: #e0f7fa; --text-color: #006064; --panel-bg: #b2ebf2; border-radius: 20px; }
-        body.theme-doga { --bg-color: #2e7d32; --text-color: #dcedc8; --panel-bg: #1b5e20; }
-        body.theme-stresli { --bg-color: #b71c1c; --text-color: #fff; animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            transition: all 0.3s ease;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Giriş ve Açılış Ekranı */
-        #auth-screen, #splash-screen {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background-color: var(--bg-color); z-index: 1000;
+        /* --- SOL NAVİGASYON --- */
+        .sidebar {
+            width: 220px;
+            background-color: var(--bg-side);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 10px;
+            border-right: 1px solid #252525;
         }
-        .auth-box {
-            background: var(--panel-bg); padding: 40px; border-radius: 10px; text-align: center;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5);
-        }
-        .auth-box input, .auth-box button {
-            display: block; width: 90%; margin: 10px auto; padding: 10px; border-radius: 5px; border: none;
-        }
-        .auth-box button { background: var(--text-color); color: var(--bg-color); cursor: pointer; font-weight: bold; }
-        
-        #splash-screen { font-size: 3em; display: none; z-index: 999; }
-        .fade-out { animation: fadeOut 2s forwards; }
-        @keyframes fadeOut { 0% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 
-        /* Ana Uygulama */
-        #app { display: none; display: flex; height: 100vh; gap: var(--distance); padding: var(--distance); box-sizing: border-box; }
-        
-        /* Yan Menü */
-        nav {
-            width: 200px; background: var(--panel-bg); padding: 20px; border-radius: 10px; display: flex; flex-direction: column; gap: 10px;
+        .logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 40px;
+            padding-left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--accent);
         }
-        nav button {
-            background: transparent; border: 1px solid var(--text-color); color: var(--text-color);
-            padding: 10px; cursor: pointer; border-radius: 5px; text-align: left; transition: 0.2s;
-        }
-        nav button:hover, nav button.active { background: var(--text-color); color: var(--bg-color); }
 
-        /* İçerik Alanı */
-        main { flex: 1; background: var(--panel-bg); border-radius: 10px; padding: 20px; overflow-y: auto; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* Kartlar ve Linkler */
-        a.link-card {
-            display: inline-block; padding: 15px 20px; margin: 10px; background: rgba(0,0,0,0.2);
-            color: var(--text-color); text-decoration: none; border-radius: 8px; border: 1px solid var(--text-color);
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: 0.2s;
+            color: var(--text-secondary);
+            margin-bottom: 5px;
         }
-        a.link-card:hover { background: var(--text-color); color: var(--bg-color); }
 
-        /* Oyun Grid Sistemi */
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-top: 20px; }
-        .game-card {
-            background: rgba(0,0,0,0.3); padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; border: 1px solid transparent;
-            text-decoration: none; color: inherit; display: block;
+        .nav-item:hover, .nav-item.active {
+            background-color: var(--bg-hover);
+            color: white;
         }
-        .game-card:hover { border-color: var(--text-color); transform: scale(1.05); }
-        .game-card.featured { border: 2px solid var(--text-color); background: rgba(255, 215, 0, 0.2); }
-        
-        /* Arkadaş ve Mesajlaşma */
-        .friend-system { display: flex; gap: 20px; height: 400px; }
-        .friend-list { width: 30%; border-right: 1px solid var(--text-color); padding-right: 10px; }
-        .chat-box { flex: 1; display: flex; flex-direction: column; }
-        .messages { flex: 1; background: rgba(0,0,0,0.2); border-radius: 5px; padding: 10px; margin-bottom: 10px; overflow-y: auto; }
-        
-        input[type="text"], input[type="range"], select { padding: 8px; border-radius: 5px; border: 1px solid var(--text-color); background: transparent; color: var(--text-color); }
-        
-        .dino-fast { background: #ff4757; color: white; padding: 10px 20px; border-radius: 5px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 20px;}
+
+        .nav-item.active { border-left: 3px solid var(--accent); }
+
+        /* --- ANA İÇERİK --- */
+        main {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #181818 0%, #121212 100%);
+        }
+
+        .section-header { margin-bottom: 25px; font-size: 1.3rem; font-weight: 600; color: var(--text-secondary); }
+
+        /* HIZLI BAŞLAT GRİD */
+        .quick-launch {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .hero-card {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: 0.3s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .hero-card:hover { transform: translateY(-5px); border-color: #333; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .hero-card .thumb { height: 140px; background: #333; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; }
+        .hero-card .info { padding: 12px; font-size: 0.95rem; font-weight: bold; text-align: center; }
+
+        /* KÜTÜPHANE GRİD */
+        .library-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 25px;
+        }
+
+        .game-poster {
+            text-decoration: none;
+            color: white;
+            transition: 0.3s;
+        }
+
+        .poster-img {
+            width: 100%;
+            aspect-ratio: 3/4;
+            background: #252525;
+            border-radius: var(--radius);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #444;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .game-poster:hover .poster-img { transform: scale(1.03); border-color: var(--accent); background: #2a2a2a; }
+        .game-poster h4 { font-size: 1rem; margin-bottom: 4px; }
+        .game-poster p { color: var(--text-secondary); font-size: 0.8rem; }
+
+        /* --- SAĞ ARKADAŞ PANELİ --- */
+        .friends-panel {
+            width: 280px;
+            background-color: var(--bg-side);
+            padding: 20px;
+            border-left: 1px solid #252525;
+        }
+
+        .friend-list { margin-top: 25px; }
+        .friend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .friend-item:hover { background: var(--bg-hover); }
+
+        .avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: #333; display: flex; align-items: center; justify-content: center;
+            position: relative; font-weight: bold; font-size: 0.9rem;
+        }
+
+        .status {
+            width: 12px; height: 12px; border-radius: 50%;
+            position: absolute; bottom: 0; right: 0; border: 2.5px solid var(--bg-side);
+        }
+        .online { background: #31d34c; }
+        .playing { background: var(--accent); }
+
+        .friend-info h5 { font-size: 0.9rem; }
+        .friend-info p { font-size: 0.75rem; color: var(--text-secondary); }
+
+        /* GİRİŞ EKRANI */
+        #auth-screen {
+            position: fixed; inset: 0; background: var(--bg-base);
+            display: flex; align-items: center; justify-content: center; z-index: 1000;
+        }
+        .auth-box { background: var(--bg-card); padding: 40px; border-radius: 12px; width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.6); }
+        .auth-box input { width: 100%; padding: 12px; margin: 10px 0; background: #333; border: 1px solid #444; color: white; border-radius: 4px; }
+        .auth-box button { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 4px; margin-top: 10px; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="theme-normal">
+<body>
 
-    <!-- Giriş / Kayıt Ekranı -->
     <div id="auth-screen">
         <div class="auth-box">
-            <h2 id="lang-login-title">Ömer Studio 3'e Hoş Geldin</h2>
+            <i class="fa-solid fa-cube" style="font-size: 3rem; color: var(--accent); margin-bottom: 20px;"></i>
+            <h2 style="margin-bottom:20px; letter-spacing: 1px;">ÖMER STUDIO 3</h2>
             <input type="text" id="username" placeholder="Kullanıcı Adı">
             <input type="password" id="password" placeholder="Şifre">
-            <button onclick="login()" id="lang-login-btn">Giriş Yap / Kaydol</button>
+            <button onclick="login()">GİRİŞ YAP</button>
         </div>
     </div>
 
-    <!-- Açılış Ekranı -->
-    <div id="splash-screen">
-        <h1>Ömer Studio 3</h1>
-        <p>Yükleniyor...</p>
-    </div>
+    <nav class="sidebar hidden" id="main-nav">
+        <div class="logo"><i class="fa-solid fa-ghost"></i> OS3 PRO</div>
+        <div class="nav-item active" onclick="showTab('home')"><i class="fa-solid fa-house"></i> Ana Sayfa</div>
+        <div class="nav-item" onclick="showTab('library')"><i class="fa-solid fa-layer-group"></i> Kütüphane</div>
+        <div class="nav-item" onclick="showTab('social')"><i class="fa-solid fa-share-nodes"></i> Sosyal Medya</div>
+        <div class="nav-item" onclick="showTab('settings')"><i class="fa-solid fa-gear"></i> Ayarlar</div>
+        <div class="nav-item" onclick="logout()" style="margin-top:auto; color:#ff4757;"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</div>
+    </nav>
 
-    <!-- Ana Uygulama -->
-    <div id="app" style="display: none;">
-        <nav>
-            <h2 style="margin-top:0;">OS 3</h2>
-            <button class="active" onclick="openTab('sosyal')" id="lang-nav-social">1. Sosyal</button>
-            <button onclick="openTab('arkadaslar')" id="lang-nav-friends">2. Arkadaşlar</button>
-            <button onclick="openTab('diger')" id="lang-nav-other">3. Diğer</button>
-            <button onclick="openTab('oyunlar')" id="lang-nav-games">4. Oyunlar</button>
-            <button onclick="openTab('ayarlar')" id="lang-nav-settings">Ayarlar</button>
-            <button onclick="openTab('guncelleme')" id="lang-nav-update">Güncelleme</button>
-            <button onclick="logout()" style="margin-top: auto; border-color: red; color: red;">Çıkış Yap</button>
-        </nav>
-
-        <main>
-            <!-- 1. Sosyal -->
-            <div id="sosyal" class="tab-content active">
-                <h2>Sosyal Medya</h2>
-                <a href="https://www.youtube.com/@Tekinişko" target="_blank" class="link-card">YouTube: @Tekinişko</a>
-                <a href="https://www.youtube.com/@TheBaddking" target="_blank" class="link-card">YouTube: @TheBaddking</a>
-                <a href="https://www.youtube.com/@TheBaddking2" target="_blank" class="link-card">YouTube: @TheBaddking2</a>
-            </div>
-
-            <!-- 2. Arkadaşlar -->
-            <div id="arkadaslar" class="tab-content">
-                <h2>Arkadaşlar & Mesajlaşma</h2>
-                <div class="friend-system">
-                    <div class="friend-list">
-                        <button onclick="addFriend()">+ Ekle</button>
-                        <button onclick="removeFriend()">- Çıkar</button>
-                        <ul id="friends-ul" style="list-style:none; padding:0; margin-top:10px;"></ul>
+    <main class="hidden" id="main-content">
+        
+        <div id="home-tab">
+            <h2 class="section-header">Hızlı Başlat</h2>
+            <div class="quick-launch">
+                <div class="hero-card" onclick="window.open('omercraft_plus.html', '_blank')">
+                    <div class="thumb" style="background-image: url('https://files.freeminecraftmaps.com/images/default-thumbnail.jpg');">
+                        <i class="fa-solid fa-play" style="font-size: 2rem; opacity: 0.8;"></i>
                     </div>
-                    <div class="chat-box">
-                        <h3 id="chat-title">Sohbet</h3>
-                        <div class="messages" id="messages-div"></div>
-                        <div style="display:flex; gap:10px;">
-                            <input type="text" id="msg-input" placeholder="Mesaj yaz..." style="flex:1;">
-                            <button onclick="sendMessage()">Gönder</button>
-                        </div>
+                    <div class="info">ÖmerCraft PLUS</div>
+                </div>
+                <div class="hero-card" onclick="window.open('https://omerfarukevran430-ctrl.github.io/Tekin-prototip/', '_blank')">
+                    <div class="thumb" style="background: linear-gradient(45deg, #b71c1c, #4a148c);">
+                        <i class="fa-solid fa-flask" style="font-size: 2rem;"></i>
                     </div>
+                    <div class="info">TekinZOR Prototip</div>
+                </div>
+                <div class="hero-card" onclick="window.open('https://omerfarukevran430-ctrl.github.io/aftg/', '_blank')">
+                    <div class="thumb" style="background: linear-gradient(45deg, #2e7d32, #1b5e20);">
+                        <i class="fa-solid fa-check-to-slot" style="font-size: 2rem;"></i>
+                    </div>
+                    <div class="info">Seçim Craft</div>
                 </div>
             </div>
 
-            <!-- 3. Diğer -->
-            <div id="diger" class="tab-content">
-                <h2>Geçmiş Sürümler & Web</h2>
-                <a href="https://omerfarukevran430-ctrl.github.io/-merStudio2FASTERMAN/" target="_blank" class="link-card">Ömer Studio 2 Web</a>
-                <a href="https://omerfarukevran430-ctrl.github.io/Omer-Studio-Ana-Launchers/" target="_blank" class="link-card">Ömer Studio 1 Web</a>
-                <a href="https://www.mediafire.com/file/fa98hx2kyw1i9rr/omer-studio-hub_Setup_3.1.0.exe/file" target="_blank" class="link-card">Ömer Studio 1 .exe İndir</a>
-            </div>
-
-            <!-- 4. Oyunlar -->
-            <div id="oyunlar" class="tab-content">
-                <h2>Oyun Merkezi</h2>
-                <input type="text" id="game-search" placeholder="Oyun Ara..." onkeyup="filterGames()" style="width: 100%; margin-bottom: 20px;">
-                
-                <a href="https://chromedino.com/" target="_blank" class="dino-fast">🦖 DINO FAST OYNA</a>
-
-                <div class="game-grid" id="game-container">
-                    <!-- Oyunlar JS ile eklenecek -->
+            <h2 class="section-header">Ömer Studio Koleksiyonu</h2>
+            <div class="library-grid" id="game-list">
                 </div>
+        </div>
+
+    </main>
+
+    <aside class="friends-panel hidden" id="friends-nav">
+        <div style="display:flex; justify-content:space-between; align-items:center; font-weight: bold; font-size: 0.8rem; color: var(--text-secondary);">
+            <span>ARKADAŞLAR (3)</span>
+            <i class="fa-solid fa-user-plus" style="cursor:pointer;"></i>
+        </div>
+        
+        <div class="friend-list">
+            <div class="friend-item">
+                <div class="avatar" style="background: #0078f2; color: white;">T <div class="status online"></div></div>
+                <div class="friend-info"><h5>Tekinişko</h5><p>Çevrimiçi</p></div>
             </div>
-
-            <!-- Ayarlar -->
-            <div id="ayarlar" class="tab-content">
-                <h2>Ayarlar</h2>
-                <label>Dil:</label>
-                <select id="lang-select" onchange="changeLanguage()">
-                    <option value="tr">Türkçe</option>
-                    <option value="en">English</option>
-                </select><br><br>
-
-                <label>Uzaklık (0-100):</label>
-                <input type="range" min="0" max="100" value="10" oninput="changeDistance(this.value)"><br><br>
-
-                <label>Müzik (Aç/Kapat):</label>
-                <input type="checkbox" id="music-toggle" onchange="toggleMusic()"><br><br>
-
-                <label>Tema:</label>
-                <select onchange="changeTheme(this.value)">
-                    <option value="normal">Normal (Ömer Studio Klasik Lacivert-Sarı)</option>
-                    <option value="demo">Demo</option>
-                    <option value="klasik">Klasik</option>
-                    <option value="neon">Neon</option>
-                    <option value="cyberpunk">Cyberpunk</option>
-                    <option value="troll">Troll</option>
-                    <option value="stresli">Stresli</option>
-                    <option value="sakin">Sakin</option>
-                    <option value="doga">Doğa</option>
-                </select>
+            <div class="friend-item">
+                <div class="avatar" style="background: #6a1b9a; color: white;">B <div class="status playing"></div></div>
+                <div class="friend-info"><h5>TheBaddking</h5><p>ÖmerCraft PLUS Oynuyor</p></div>
             </div>
-
-            <!-- Güncelleme -->
-            <div id="guncelleme" class="tab-content">
-                <h2>Güncelleme Notları</h2>
-                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
-                    <h3>Sürüm: 3.1.0</h3>
-                    <p><strong>Gelen Yenilikler:</strong></p>
-                    <ul>
-                        <li>Yeni Oyun: <b>ÖmerCraft PLUS</b> kütüphaneye 1. sıradan eklendi!</li>
-                        <li><b>TekinZOR Prototip</b> erişime açıldı ve oynanabilir hale getirildi.</li>
-                        <li>Oyun listesi tam 20 oyun olacak şekilde optimize edildi.</li>
-                    </ul>
-                </div>
+            <div class="friend-item">
+                <div class="avatar" style="background: #37474f; color: var(--text-secondary);">F</div>
+                <div class="friend-info"><h5>Faruk_07</h5><p style="color: #666;">Çevrimdışı</p></div>
             </div>
-        </main>
-    </div>
-
-    <!-- Arka Plan Müziği (Gizli) -->
-    <audio id="bg-music" loop>
-        <source src="https://www.bensound.com/bensound-music/bensound-creativeminds.mp3" type="audio/mpeg">
-    </audio>
+        </div>
+    </aside>
 
     <script>
-        // Tam 20 Oyunluk Liste (ÖmerCraft PLUS ilk sırada)
-        const games = [
-            { name: "⭐ ÖmerCraft PLUS", url: "omercraft_plus.html", featured: true }, // AYNI KLASÖRDEKİ HTML DOSYASINA GİDER
-            { name: "100 Days", url: "https://codepen.io/-mer-faruk-evran-the-animator/pen/LERKGwb" },
-            { name: "Ömercraft", url: "https://omerfarukevran430-ctrl.github.io/omercraft/" },
-            { name: "Seçim Craft", url: "https://omerfarukevran430-ctrl.github.io/aftg/" },
-            { name: "Click Man", url: "https://omerfarukevran430-ctrl.github.io/Click-Man/" },
-            { name: "No Escape", url: "https://omerfarukevran430-ctrl.github.io/ads-z/" },
-            { name: "Tekinzor Prototip", url: "https://omerfarukevran430-ctrl.github.io/Tekin-prototip/" }, // AKTİF EDİLDİ
-            
-            // Extra oyunlar (Toplam 20 yapmak için 13 adet popüler HTML5 oyunu)
-            { name: "2048", url: "https://play2048.co/" },
-            { name: "Tetris", url: "https://tetris.com/play-tetris" },
-            { name: "Pac-Man", url: "https://freepacman.org/" },
-            { name: "Snake", url: "https://playsnake.org/" },
-            { name: "Flappy Bird", url: "https://flappybird.io/" },
-            { name: "Minesweeper", url: "https://minesweeperonline.com/" },
-            { name: "Solitaire", url: "https://www.solitr.com/" },
-            { name: "Tic Tac Toe", url: "https://playtictactoe.org/" },
-            { name: "Chess", url: "https://chess.com/play" },
-            { name: "Space Invaders", url: "https://freeinvaders.org/" },
-            { name: "Pong", url: "https://www.ponggame.org/" },
-            { name: "Asteroids", url: "https://freeasteroids.org/" },
-            { name: "Breakout", url: "https://elgoog.im/breakout/" }
+        // SADECE SENİN OYUNLARIN
+        const myGames = [
+            { name: "ÖmerCraft PLUS", cat: "3D Sandbox", url: "omercraft_plus.html", icon: "fa-cube", color: "#8b5a2b" },
+            { name: "100 Days", cat: "Survival", url: "https://codepen.io/-mer-faruk-evran-the-animator/pen/LERKGwb", icon: "fa-hourglass-half", color: "#e65100" },
+            { name: "Seçim Craft", cat: "Simülasyon", url: "https://omerfarukevran430-ctrl.github.io/aftg/", icon: "fa-check-to-slot", color: "#2e7d32" },
+            { name: "Click Man", cat: "Clicker", url: "https://omerfarukevran430-ctrl.github.io/Click-Man/", icon: "fa-mouse", color: "#0277bd" },
+            { name: "No Escape", cat: "Korku / Aksiyon", url: "https://omerfarukevran430-ctrl.github.io/ads-z/", icon: "fa-door-closed", color: "#c62828" },
+            { name: "Ömercraft Classic", cat: "Klasik", url: "https://omerfarukevran430-ctrl.github.io/omercraft/", icon: "fa-block-brick", color: "#5d4037" },
+            { name: "TekinZOR Prototip", cat: "Geliştirme Aşamasında", url: "https://omerfarukevran430-ctrl.github.io/Tekin-prototip/", icon: "fa-flask", color: "#4527a0" }
         ];
 
-        // Oyunları Yükle
-        const gameContainer = document.getElementById('game-container');
-        games.forEach(game => {
-            let a = document.createElement('a');
-            a.className = 'game-card' + (game.featured ? ' featured' : '');
-            a.href = game.url;
-            a.target = '_blank';
-            a.innerHTML = `<h3>${game.name}</h3>`;
-            gameContainer.appendChild(a);
-        });
-
-        // Oyun Arama Filtresi
-        function filterGames() {
-            let input = document.getElementById('game-search').value.toLowerCase();
-            let cards = gameContainer.getElementsByClassName('game-card');
-            for (let i = 0; i < cards.length; i++) {
-                let title = cards[i].innerText.toLowerCase();
-                cards[i].style.display = title.includes(input) ? "block" : "none";
-            }
+        function login() {
+            const u = document.getElementById('username').value;
+            if(!u) return alert("Lütfen bir kullanıcı adı girin.");
+            localStorage.setItem("osUser", u);
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+            loadGames();
         }
 
-        // Giriş Sistemi (LocalStorage)
-        function login() {
-            const user = document.getElementById('username').value;
-            if (user.trim() === "") return alert("Kullanıcı adı giriniz!");
-            localStorage.setItem("omerStudioUser", user);
-            
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('splash-screen').style.display = 'flex';
-            
-            setTimeout(() => {
-                document.getElementById('splash-screen').classList.add('fade-out');
-                setTimeout(() => {
-                    document.getElementById('splash-screen').style.display = 'none';
-                    document.getElementById('app').style.display = 'flex';
-                }, 2000);
-            }, 1500);
+        function loadGames() {
+            const container = document.getElementById('game-list');
+            container.innerHTML = "";
+            myGames.forEach(g => {
+                container.innerHTML += `
+                    <a href="${g.url}" target="_blank" class="game-poster">
+                        <div class="poster-img" style="color: ${g.color}"><i class="fa-solid ${g.icon}"></i></div>
+                        <h4>${g.name}</h4>
+                        <p>${g.cat}</p>
+                    </a>
+                `;
+            });
         }
 
         function logout() {
-            localStorage.removeItem("omerStudioUser");
+            localStorage.removeItem("osUser");
             location.reload();
         }
 
-        // Otomatik Giriş Kontrolü
-        if (localStorage.getItem("omerStudioUser")) {
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('app').style.display = 'flex';
-        }
-
-        // Menü Sekmeleri
-        function openTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        // Arkadaş Sistemi Prototipi
-        let friends = ["TheBaddking", "Tekinişko"];
-        function renderFriends() {
-            let ul = document.getElementById('friends-ul');
-            ul.innerHTML = "";
-            friends.forEach(f => {
-                let li = document.createElement('li');
-                li.style.padding = "5px";
-                li.style.borderBottom = "1px solid var(--text-color)";
-                li.innerText = "👤 " + f;
-                ul.appendChild(li);
-            });
-        }
-        function addFriend() {
-            let name = prompt("Eklenecek arkadaşın adı:");
-            if (name && !friends.includes(name)) { friends.push(name); renderFriends(); }
-        }
-        function removeFriend() {
-            let name = prompt("Silinecek arkadaşın adı:");
-            friends = friends.filter(f => f !== name);
-            renderFriends();
-        }
-        renderFriends();
-
-        // Mesaj Sistemi Prototipi
-        function sendMessage() {
-            let input = document.getElementById('msg-input');
-            if (input.value.trim() === "") return;
-            let msgDiv = document.getElementById('messages-div');
-            msgDiv.innerHTML += `<div style="text-align:right; color:var(--accent-color); margin:5px 0;">Sen: ${input.value}</div>`;
-            input.value = "";
-            msgDiv.scrollTop = msgDiv.scrollHeight;
-        }
-
-        // Ayarlar Fonksiyonları
-        function changeTheme(themeName) {
-            document.body.className = `theme-${themeName}`;
-        }
-
-        function changeDistance(val) {
-            document.documentElement.style.setProperty('--distance', val + 'px');
-        }
-
-        let musicPlaying = false;
-        function toggleMusic() {
-            let audio = document.getElementById('bg-music');
-            if (document.getElementById('music-toggle').checked) { audio.play(); } 
-            else { audio.pause(); }
-        }
-
-        // Dil Desteği (Basit Çeviri Sistemi)
-        const dict = {
-            "tr": { "login-title": "Ömer Studio 3'e Hoş Geldin", "login-btn": "Giriş Yap / Kaydol", "nav-social": "1. Sosyal", "nav-friends": "2. Arkadaşlar", "nav-other": "3. Diğer", "nav-games": "4. Oyunlar", "nav-settings": "Ayarlar", "nav-update": "Güncelleme" },
-            "en": { "login-title": "Welcome to Ömer Studio 3", "login-btn": "Login / Register", "nav-social": "1. Social", "nav-friends": "2. Friends", "nav-other": "3. Other", "nav-games": "4. Games", "nav-settings": "Settings", "nav-update": "Updates" }
-        };
-        function changeLanguage() {
-            let lang = document.getElementById('lang-select').value;
-            document.getElementById('lang-login-title').innerText = dict[lang]["login-title"];
-            document.getElementById('lang-login-btn').innerText = dict[lang]["login-btn"];
-            document.getElementById('lang-nav-social').innerText = dict[lang]["nav-social"];
-            document.getElementById('lang-nav-friends').innerText = dict[lang]["nav-friends"];
-            document.getElementById('lang-nav-other').innerText = dict[lang]["nav-other"];
-            document.getElementById('lang-nav-games').innerText = dict[lang]["nav-games"];
-            document.getElementById('lang-nav-settings').innerText = dict[lang]["nav-settings"];
-            document.getElementById('lang-nav-update').innerText = dict[lang]["nav-update"];
+        // Oturum Kontrolü
+        if(localStorage.getItem("osUser")) {
+            document.getElementById('auth-screen').classList.add('hidden');
+            document.getElementById('main-nav').classList.remove('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+            document.getElementById('friends-nav').classList.remove('hidden');
+            loadGames();
         }
     </script>
 </body>
