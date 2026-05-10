@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>ÖmerCraft PLUS V2</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+        :root {
+            --bg-color: #333; --text-color: #fff; --btn-bg: #777; --btn-border: #555; --menu-bg: rgba(0,0,0,0.85);
+        }
+
+        body {
+            margin: 0; overflow: hidden; font-family: 'VT323', monospace;
+            background-color: var(--bg-color); color: var(--text-color);
+            user-select: none; transition: background 0.5s;
+        }
+
+        /* Temalar */
+        body.theme-klasik { background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); background-color: #5d4037; }
+        body.theme-cyberpunk { background-color: #0f0f1b; text-shadow: 0 0 5px #0ff; --btn-bg: #ff00ff; --btn-border: #00ffff; }
+        body.theme-neon { background-color: #000; --btn-bg: #0f0; --btn-border: #0a0; text-shadow: 0 0 10px #0f0; }
+        body.theme-matrix { background-color: #000; color: #0f0; --btn-bg: #020; --btn-border: #0f0; }
+        body.theme-demo { background-color: #aaaaaa; }
+        body.theme-bad { background-color: #8b0000; }
+        body.theme-stresli { background-color: #ff4500; animation: shake 0.3s infinite; }
+        body.theme-sakin { background-color: #add8e6; color: #333; }
+        body.theme-doga { background-color: #228b22; }
+        body.theme-troll { transform: rotate(180deg); background-color: #ff1493; }
+
+        @keyframes shake { 0% { transform: translate(2px, 1px) rotate(0deg); } 100% { transform: translate(-1px, -2px) rotate(-1deg); } }
+
+        .menu-container {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: var(--menu-bg); z-index: 10;
+        }
+
+        h1 { font-size: 4rem; text-align: center; text-shadow: 3px 3px 0px #000; margin-bottom: 20px; }
+        
+        .btn {
+            width: 400px; padding: 15px; margin: 5px; font-size: 1.5rem; font-family: 'VT323', monospace;
+            background: var(--btn-bg); color: var(--text-color); border: 4px solid var(--btn-border);
+            cursor: pointer; text-align: center; text-transform: uppercase;
+        }
+        .btn:hover { background: #999; }
+
+        .input-group { margin: 10px; display: flex; flex-direction: column; width: 400px; }
+        input, select {
+            font-family: 'VT323', monospace; font-size: 1.5rem; padding: 8px; margin-top: 5px;
+            background: #000; color: #fff; border: 2px solid #555;
+        }
+
+        .hidden { display: none !important; }
+
+        #game-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+        
+        /* İmleç (Crosshair) */
+        #crosshair {
+            position: absolute; top: 50%; left: 50%; width: 20px; height: 20px;
+            transform: translate(-50%, -50%); z-index: 2; pointer-events: none;
+        }
+        #crosshair::before, #crosshair::after {
+            content: ''; position: absolute; background: rgba(255, 255, 255, 0.8);
+        }
+        #crosshair::before { top: 9px; left: 0; width: 20px; height: 2px; }
+        #crosshair::after { top: 0; left: 9px; width: 2px; height: 20px; }
+
+        /* Arayüzler */
+        .overlay-ui {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8); border: 4px solid #555; padding: 20px; z-index: 5;
+        }
+
+        #inventory { width: 500px; display: flex; flex-wrap: wrap; gap: 10px; }
+        .slot { width: 60px; height: 60px; background: #8b8b8b; border: 3px inset #fff; display: flex; align-items:center; justify-content:center;}
+        .item { width: 90%; height: 90%; background: #654321; cursor: grab; text-align:center; line-height: 50px; font-size: 1rem; border: 1px solid #333;}
+        .item.stone { background: #888; }
+        .item.wood { background: #8b5a2b; }
+
+        #chat {
+            position: absolute; bottom: 20px; left: 20px; width: 400px; height: 250px;
+            background: rgba(0,0,0,0.6); z-index: 5; display: flex; flex-direction: column;
+        }
+        #chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px; color: white; font-size: 1.2rem;}
+        #chat-input { width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.8); color: white; border: none; padding: 10px; font-family: 'VT323'; font-size:1.2rem;}
+        
+        #blocker {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.5); z-index: 4; display: flex; align-items: center; justify-content: center;
+            color: white; font-size: 3rem; text-align: center; cursor: pointer;
+        }
+    </style>
+    <!-- Three.js ve PointerLockControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+</head>
+<body class="theme-klasik">
+
+    <!-- Güvenilir Test Müziği -->
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- ANA MENÜ -->
+    <div id="main-menu" class="menu-container">
+        <h1 id="title-text">ÖmerCraft PLUS</h1>
+        <button class="btn" data-i18n="sp" onclick="showMenu('sp-menu')">1. Tek Oyunculu</button>
+        <button class="btn" data-i18n="ssp" onclick="showMenu('ssp-menu')">2. Kaydedilen Tek Oyunculu</button>
+        <button class="btn" data-i18n="mp" onclick="showMenu('mp-menu')">3. Çok Oyunculu</button>
+        <button class="btn" data-i18n="smp" onclick="showMenu('smp-menu')">4. Kaydedilen Çok Oyunculu</button>
+        <button class="btn" data-i18n="set" onclick="showMenu('settings-menu')">5. Ayarlar</button>
+    </div>
+
+    <!-- DİĞER MENÜLER -->
+    <div id="sp-menu" class="menu-container hidden">
+        <h1 data-i18n="sp_title">Tek Oyunculu Yeni Dünya</h1>
+        <div class="input-group">
+            <label data-i18n="world_name">Dünya Adı:</label><input type="text" id="sp-world-name">
+        </div>
+        <div class="input-group">
+            <label data-i18n="world_pass">Dünya Şifresi:</label><input type="password" id="sp-world-pass">
+        </div>
+        <button class="btn" data-i18n="create_enter" onclick="createWorld('sp')">Dünyayı Oluştur / Gir</button>
+        <button class="btn" data-i18n="back" onclick="showMenu('main-menu')">Geri</button>
+    </div>
+
+    <div id="ssp-menu" class="menu-container hidden">
+        <h1 data-i18n="ssp_title">Kaydedilen Dünyalar</h1>
+        <div id="ssp-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 10px; width: 400px;"></div>
+        <button class="btn" data-i18n="back" onclick="showMenu('main-menu')">Geri</button>
+    </div>
+
+    <div id="mp-menu" class="menu-container hidden">
+        <h1 data-i18n="mp_title">Çok Oyunculu Giriş</h1>
+        <div class="input-group"><label data-i18n="user_name">Kullanıcı Adı:</label><input type="text" id="mp-username"></div>
+        <div class="input-group"><label data-i18n="user_pass">Kullanıcı Şifresi:</label><input type="password" id="mp-userpass"></div>
+        <div class="input-group"><label data-i18n="server_name">Sunucu/Dünya Adı:</label><input type="text" id="mp-world-name"></div>
+        <div class="input-group"><label data-i18n="server_pass">Sunucu Şifresi:</label><input type="password" id="mp-world-pass"></div>
+        <button class="btn" data-i18n="join_server" onclick="createWorld('mp')">Sunucuya Katıl / Kaydet</button>
+        <button class="btn" data-i18n="back" onclick="showMenu('main-menu')">Geri</button>
+    </div>
+
+    <div id="smp-menu" class="menu-container hidden">
+        <h1 data-i18n="smp_title">Kaydedilen Sunucular</h1>
+        <div id="smp-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 10px; width:400px;"></div>
+        <button class="btn" data-i18n="back" onclick="showMenu('main-menu')">Geri</button>
+    </div>
+
+    <div id="settings-menu" class="menu-container hidden">
+        <h1 data-i18n="set_title">Ayarlar</h1>
+        <div class="input-group">
+            <label>POV (FOV): <span id="fov-val">75</span></label>
+            <input type="range" id="fov-slider" min="30" max="110" value="75" oninput="updateFOV(this.value)">
+        </div>
+        <div class="input-group">
+            <label data-i18n="lang">Dil:</label>
+            <select id="lang-select" onchange="changeLanguage(this.value)">
+                <option value="tr">🇹🇷 Türkçe</option><option value="en">🇬🇧 İngilizce</option>
+                <option value="zh">🇨🇳 Çince (中文)</option><option value="ko">🇰🇷 Korece</option>
+                <option value="ru">🇷🇺 Rusça</option><option value="ky">🇰🇬 Kırgızca</option>
+                <option value="az">🇦🇿 Azerice</option><option value="el">🇬🇷 Yunanca</option>
+                <option value="it">🇮🇹 İtalyanca</option><option value="es">🇪🇸 İspanyolca</option>
+                <option value="pt">🇵🇹 Portekizce</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label data-i18n="theme">Tema:</label>
+            <select id="theme-select" onchange="changeTheme(this.value)">
+                <option value="klasik">Klasik</option><option value="cyberpunk">Cyberpunk</option>
+                <option value="neon">Neon</option><option value="matrix">Matrix</option>
+                <option value="demo">Demo</option><option value="bad">Bad</option>
+                <option value="stresli">Stresli</option><option value="sakin">Sakin</option>
+                <option value="doga">Doğa</option><option value="troll">Troll</option>
+            </select>
+        </div>
+        <button class="btn" data-i18n="back" onclick="showMenu('main-menu')">Geri</button>
+    </div>
+
+    <!-- OYUN İÇİ ARAYÜZ -->
+    <div id="game-ui" class="hidden">
+        <div id="crosshair"></div>
+        
+        <!-- Tıklama Ekranı (PointerLock için) -->
+        <div id="blocker">
+            <span data-i18n="click_to_play">Oyuna dönmek için tıkla<br>(E: Envanter | T: Chat | W,A,S,D: Hareket)</span>
+        </div>
+
+        <div id="inventory" class="overlay-ui hidden">
+            <h2 style="width: 100%; text-align: center; margin-top:0;" data-i18n="inv_title">Bloklar (Sürükle Bırak)</h2>
+            <div class="slot"><div class="item wood" draggable="true" id="block1">Toprak</div></div>
+            <div class="slot"><div class="item stone" draggable="true" id="block2">Taş</div></div>
+            <div class="slot"></div><div class="slot"></div><div class="slot"></div><div class="slot"></div>
+        </div>
+
+        <div id="chat" class="hidden">
+            <div id="chat-messages"><span style="color:#0f0;">[Sistem]: ÖmerCraft V2'ye hoşgeldin!</span><br></div>
+            <input type="text" id="chat-input" placeholder="Mesaj yaz...">
+        </div>
+    </div>
+
+    <div id="game-container"></div>
+
+    <script>
+        // --- GELİŞMİŞ ÇEVİRİ SİSTEMİ ---
+        const i18n = {
+            tr: {
+                sp:"1. Tek Oyunculu", ssp:"2. Kaydedilen Tek Oyunculu", mp:"3. Çok Oyunculu", smp:"4. Kaydedilen Çok Oyunculu", set:"5. Ayarlar",
+                sp_title:"Tek Oyunculu Yeni Dünya", ssp_title:"Kaydedilen Dünyalar", mp_title:"Çok Oyunculu Giriş", smp_title:"Kaydedilen Sunucular", set_title:"Ayarlar",
+                world_name:"Dünya Adı:", world_pass:"Dünya Şifresi:", create_enter:"Dünyayı Oluştur / Gir", back:"Geri",
+                user_name:"Kullanıcı Adı:", user_pass:"Kullanıcı Şifresi:", server_name:"Sunucu/Dünya Adı:", server_pass:"Sunucu Şifresi:", join_server:"Sunucuya Katıl / Kaydet",
+                lang:"Dil:", theme:"Tema:", click_to_play:"Oyuna dönmek için tıkla\n(Sol Tık: Kır | Sağ Tık: Koy)", inv_title:"Envanter"
+            },
+            en: {
+                sp:"1. Singleplayer", ssp:"2. Saved Singleplayer", mp:"3. Multiplayer", smp:"4. Saved Multiplayer", set:"5. Settings",
+                sp_title:"Singleplayer New World", ssp_title:"Saved Worlds", mp_title:"Multiplayer Login", smp_title:"Saved Servers", set_title:"Settings",
+                world_name:"World Name:", world_pass:"World Password:", create_enter:"Create / Enter World", back:"Back",
+                user_name:"Username:", user_pass:"User Password:", server_name:"Server/World Name:", server_pass:"Server Password:", join_server:"Join / Save Server",
+                lang:"Language:", theme:"Theme:", click_to_play:"Click to play\n(Left Click: Break | Right Click: Place)", inv_title:"Inventory"
+            },
+            // Diğer diller için temel çeviriler (Örnek olarak kısa tutulmuştur, sistem hepsini destekler)
+            ru: { sp:"1. Одиночная", ssp:"2. Сохраненные", mp:"3. Мультиплеер", smp:"4. Серверы", set:"5. Настройки", back:"Назад", click_to_play:"Кликните, чтобы играть", create_enter:"Создать / Войти", join_server:"Присоединиться" },
+            zh: { sp:"1. 单人", ssp:"2. 存档", mp:"3. 多人", smp:"4. 服务器", set:"5. 设置", back:"返回", click_to_play:"点击开始游戏", create_enter:"创建 / 进入", join_server:"加入" },
+            // Desteklenen diğer diller eksikse TR'den çeker
+        };
+
+        function changeLanguage(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                let key = el.getAttribute('data-i18n');
+                // Eğer seçili dilde çeviri yoksa TR veya EN kullan
+                let text = (i18n[lang] && i18n[lang][key]) ? i18n[lang][key] : i18n['tr'][key];
+                el.innerText = text;
+            });
+        }
+
+        function changeTheme(theme) { document.body.className = "theme-" + theme; }
+
+        // --- MENÜ VE KAYIT YÖNETİMİ ---
+        let spWorlds = JSON.parse(localStorage.getItem('omercraft_sp_v2')) || {};
+        let mpWorlds = JSON.parse(localStorage.getItem('omercraft_mp_v2')) || {};
+
+        function showMenu(menuId) {
+            document.querySelectorAll('.menu-container').forEach(el => el.classList.add('hidden'));
+            if(menuId) document.getElementById(menuId).classList.remove('hidden');
+            if(menuId === 'ssp-menu') loadSavedWorlds('sp');
+            if(menuId === 'smp-menu') loadSavedWorlds('mp');
+        }
+
+        function createWorld(type) {
+            if (type === 'sp') {
+                let name = document.getElementById('sp-world-name').value;
+                let pass = document.getElementById('sp-world-pass').value;
+                if (!name || !pass) return alert("Ad ve şifre zorunlu!");
+                if (spWorlds[name] && spWorlds[name] !== pass) return alert("Yanlış Şifre!");
+                spWorlds[name] = pass;
+                localStorage.setItem('omercraft_sp_v2', JSON.stringify(spWorlds));
+            } else {
+                let uname = document.getElementById('mp-username').value;
+                let wname = document.getElementById('mp-world-name').value;
+                let wpass = document.getElementById('mp-world-pass').value;
+                if(!uname || !wname) return alert("Bilgiler eksik!");
+                if (mpWorlds[wname] && mpWorlds[wname].wpass !== wpass) return alert("Yanlış Sunucu Şifresi!");
+                mpWorlds[wname] = { uname, wpass };
+                localStorage.setItem('omercraft_mp_v2', JSON.stringify(mpWorlds));
+            }
+            startGame();
+        }
+
+        function loadSavedWorlds(type) {
+            let listDiv = document.getElementById(type === 'sp' ? 'ssp-list' : 'smp-list');
+            listDiv.innerHTML = "";
+            let data = type === 'sp' ? spWorlds : mpWorlds;
+            for (let key in data) {
+                let btn = document.createElement('button');
+                btn.className = 'btn'; btn.style.width = "100%";
+                btn.innerText = type === 'sp' ? key : `Sunucu: ${key}`;
+                btn.onclick = () => {
+                    let pass = prompt(`Şifre:`);
+                    if (pass === (type === 'sp' ? data[key] : data[key].wpass)) startGame();
+                    else alert("Hatalı Şifre!");
+                };
+                listDiv.appendChild(btn);
+            }
+        }
+
+        // --- 3D OYUN MOTORU (HAREKET, FİZİK, BLOK KIRMA) ---
+        let camera, scene, renderer, controls;
+        let objects = []; // Çarpışma ve raycaster için bloklar
+        let moveForward = false, moveBackward = false, moveLeft = false, moveRight = false;
+        let canJump = false, isFlying = false;
+        let prevTime = performance.now();
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let raycaster = new THREE.Raycaster();
+        let gameActive = false;
+        let lastSpaceTime = 0;
+
+        function startGame() {
+            showMenu(null);
+            document.getElementById('game-ui').classList.remove('hidden');
+            
+            // Müziği tam bu anda, kullanıcı tıkladığı için başlatıyoruz (Tarayıcı engellemez)
+            let music = document.getElementById('bg-music');
+            music.volume = 0.3;
+            music.play().catch(e => console.log("Müzik çalınamadı", e));
+
+            if(!scene) init3D();
+            gameActive = true;
+        }
+
+        function init3D() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x87CEEB); // Gökyüzü
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            
+            // PointerLock (Fare ile etrafa bakma)
+            controls = new THREE.PointerLockControls(camera, document.body);
+            
+            let blocker = document.getElementById('blocker');
+            blocker.addEventListener('click', function () { controls.lock(); });
+            controls.addEventListener('lock', function () { blocker.style.display = 'none'; });
+            controls.addEventListener('unlock', function () {
+                if(gameActive) blocker.style.display = 'flex';
+            });
+            scene.add(controls.getObject());
+
+            // Işıklar
+            let light = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.75);
+            light.position.set(0.5, 1, 0.75);
+            scene.add(light);
+
+            // Zemin
+            let floorGeo = new THREE.PlaneGeometry(200, 200);
+            let floorMat = new THREE.MeshLambertMaterial({ color: 0x228b22 });
+            let floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.name = "Zemin";
+            scene.add(floor);
+            objects.push(floor);
+
+            // Rastgele Bloklar
+            let boxGeo = new THREE.BoxGeometry(2, 2, 2);
+            let boxMat = new THREE.MeshLambertMaterial({ color: 0x8b5a2b }); // Ahşap/Toprak rengi
+            for ( let i = 0; i < 100; i ++ ) {
+                let box = new THREE.Mesh(boxGeo, boxMat);
+                box.position.x = Math.floor( Math.random() * 20 - 10 ) * 2;
+                box.position.y = 1;
+                box.position.z = Math.floor( Math.random() * 20 - 10 ) * 2;
+                scene.add(box);
+                objects.push(box);
+            }
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('game-container').appendChild(renderer.domElement);
+
+            // Klavye Dinleyicileri (W,A,S,D)
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+            // Fare Dinleyicileri (Blok Kırma/Koyma)
+            document.addEventListener('mousedown', onMouseDown);
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animate();
+        }
+
+        const onKeyDown = function (event) {
+            if(!controls.isLocked) return;
+            switch (event.code) {
+                case 'ArrowUp': case 'KeyW': moveForward = true; break;
+                case 'ArrowLeft': case 'KeyA': moveLeft = true; break;
+                case 'ArrowDown': case 'KeyS': moveBackward = true; break;
+                case 'ArrowRight': case 'KeyD': moveRight = true; break;
+                case 'Space': 
+                    let now = Date.now();
+                    if(now - lastSpaceTime < 300) { isFlying = !isFlying; velocity.y = 0; } // Çift boşluk uçma
+                    else if(canJump || isFlying) { velocity.y += (isFlying ? 30 : 50); canJump = false; }
+                    lastSpaceTime = now;
+                    break;
+            }
+        };
+
+        const onKeyUp = function (event) {
+            switch (event.code) {
+                case 'ArrowUp': case 'KeyW': moveForward = false; break;
+                case 'ArrowLeft': case 'KeyA': moveLeft = false; break;
+                case 'ArrowDown': case 'KeyS': moveBackward = false; break;
+                case 'ArrowRight': case 'KeyD': moveRight = false; break;
+                // E ve T Tuşları (Menüleri açarken fareyi serbest bırak)
+                case 'KeyE': toggleUI('inventory'); break;
+                case 'KeyT': toggleUI('chat'); break;
+            }
+        };
+
+        function toggleUI(id) {
+            let el = document.getElementById(id);
+            if(el.classList.contains('hidden')) {
+                controls.unlock();
+                el.classList.remove('hidden');
+                if(id === 'chat') document.getElementById('chat-input').focus();
+            } else {
+                el.classList.add('hidden');
+                controls.lock();
+            }
+        }
+
+        // --- BLOK KIRMA VE KOYMA ---
+        function onMouseDown(event) {
+            if(!controls.isLocked) return;
+            raycaster.setFromCamera(new THREE.Vector2(0,0), camera); // Ekranın tam ortası
+            let intersects = raycaster.intersectObjects(objects);
+
+            if (intersects.length > 0) {
+                let intersect = intersects[0];
+                if(intersect.distance > 10) return; // Çok uzaktakini kırma
+
+                // Sol Tık: Kır (Zemin hariç)
+                if(event.button === 0 && intersect.object.name !== "Zemin") {
+                    scene.remove(intersect.object);
+                    objects.splice(objects.indexOf(intersect.object), 1);
+                }
+                // Sağ Tık: Koy
+                else if(event.button === 2) {
+                    let newBoxGeo = new THREE.BoxGeometry(2, 2, 2);
+                    let newBoxMat = new THREE.MeshLambertMaterial({ color: 0x888888 }); // Taş rengi
+                    let voxel = new THREE.Mesh(newBoxGeo, newBoxMat);
+                    voxel.position.copy(intersect.point).add(intersect.face.normal);
+                    voxel.position.divideScalar(2).floor().multiplyScalar(2).addScalar(1);
+                    scene.add(voxel);
+                    objects.push(voxel);
+                }
+            }
+        }
+
+        // Chat Enter
+        document.getElementById('chat-input').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter' && this.value.trim() !== "") {
+                document.getElementById('chat-messages').innerHTML += `<div>[Sen]: ${this.value}</div>`;
+                this.value = "";
+                document.getElementById('chat-messages').scrollTop = 9999;
+            }
+        });
+
+        function updateFOV(val) {
+            document.getElementById('fov-val').innerText = val;
+            if(camera) { camera.fov = val; camera.updateProjectionMatrix(); }
+        }
+
+        // --- FİZİK VE DÖNGÜ ---
+        function animate() {
+            requestAnimationFrame(animate);
+            if (!controls || !controls.isLocked) {
+                if(renderer && scene && camera) renderer.render(scene, camera);
+                return;
+            }
+
+            let time = performance.now();
+            let delta = (time - prevTime) / 1000;
+
+            velocity.x -= velocity.x * 10.0 * delta;
+            velocity.z -= velocity.z * 10.0 * delta;
+            if(!isFlying) velocity.y -= 9.8 * 15.0 * delta; // Yerçekimi
+            else velocity.y -= velocity.y * 5.0 * delta; // Uçarken sürtünme
+
+            direction.z = Number(moveForward) - Number(moveBackward);
+            direction.x = Number(moveRight) - Number(moveLeft);
+            direction.normalize(); 
+
+            if (moveForward || moveBackward) velocity.z -= direction.z * 100.0 * delta;
+            if (moveLeft || moveRight) velocity.x -= direction.x * 100.0 * delta;
+
+            controls.moveRight(-velocity.x * delta);
+            controls.moveForward(-velocity.z * delta);
+            controls.getObject().position.y += (velocity.y * delta);
+
+            // Zemin Çarpışması
+            if (controls.getObject().position.y < 2) {
+                velocity.y = 0;
+                controls.getObject().position.y = 2;
+                canJump = true;
+            }
+
+            prevTime = time;
+            renderer.render(scene, camera);
+        }
+    </script>
+</body>
+</html>
